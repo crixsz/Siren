@@ -66,18 +66,24 @@ impl<'a> ProxyStream<'a> {
         let peeked_buffer = self.peek_buffer(62);
 
         if peeked_buffer[0] == 0 {
+            console_log!("VLESS detected!");
             self.process_vless().await
         } else if peeked_buffer[0] == 1 || peeked_buffer[0] == 3 {
+            console_log!("Shadowsocks detected!");
             self.process_shadowsocks().await
         } else if peeked_buffer[56] == 13 && peeked_buffer[57] == 10 {
+            console_log!("Trojan detected!");
             self.process_trojan().await
         } else {
+            console_log!("Vmess detected!");
             self.process_vmess().await
         }
 
     }
 
     pub async fn handle_tcp_outbound(&mut self, addr: String, port: u16) -> Result<()> {
+        console_log!("connecting to upstream {}:{}", addr, port);
+
         let mut remote_socket = Socket::builder().connect(addr, port).map_err(|e| {
             Error::RustError(e.to_string())
         })?;
